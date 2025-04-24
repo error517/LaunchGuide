@@ -1,17 +1,25 @@
 'use client';
 
-import {useState} from 'react';
-
-const mockPlan = [
-  '1. Research relevant keywords using a free tool like Google Keyword Planner.',
-  '2. Create a content calendar outlining topics and publication dates.',
-  '3. Write a blog post targeting one of the chosen keywords.',
-];
+import {useState, useEffect} from 'react';
 
 export default function PlanDisplay() {
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>(
-    new Array(mockPlan.length).fill(false)
-  );
+  const [plan, setPlan] = useState<string[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    // Retrieve plan from local storage on component mount
+    const storedPlan = localStorage.getItem('plan');
+    if (storedPlan) {
+      const parsedPlan = JSON.parse(storedPlan);
+      setPlan(parsedPlan);
+      setCompletedSteps(new Array(parsedPlan.length).fill(false)); // Initialize completedSteps
+    }
+  }, []);
+
+  useEffect(() => {
+    // Update completed steps when plan changes (e.g., after generation)
+    setCompletedSteps(new Array(plan.length).fill(false));
+  }, [plan]);
 
   const handleStepComplete = (index: number) => {
     setCompletedSteps(prev => {
@@ -27,7 +35,7 @@ export default function PlanDisplay() {
       <p className="text-lg mb-8">Follow these steps to get started:</p>
 
       <ul className="w-full max-w-lg">
-        {mockPlan.map((step, index) => (
+        {plan.map((step, index) => (
           <li
             key={index}
             className="mb-4 flex items-center justify-between bg-card rounded-md shadow-sm p-4"
