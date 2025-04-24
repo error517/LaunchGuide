@@ -21,8 +21,8 @@ export default function Home() {
   const [consumerTargetAudience, setConsumerTargetAudience] = useState('');
   const [businessTargetAudience, setBusinessTargetAudience] = useState('');
   const [governmentTargetAudience, setGovernmentTargetAudience] = useState('');
-  const [currentAwareness, setCurrentAwareness] = useState('Just an idea');
-  const [goal, setGoal] = useState('Awareness');
+  const [currentAwareness, setCurrentAwareness] = useState<'Just an idea' | 'MVP live' | 'Some beta users' | 'Public launch' | 'Revenue generating'>('Just an idea');
+  const [goal, setGoal] = useState<'Awareness' | 'Waitlist signups' | 'App downloads' | 'Purchases/Users' | 'Feedback/Validation' | 'Brand credibility'>('Awareness');
   const [budget, setBudget] = useState([500]);
   const [strengthsToLeverage, setStrengthsToLeverage] = useState('');
   const [majorConstraints, setMajorConstraints] = useState('');
@@ -31,7 +31,6 @@ export default function Home() {
   const [toneAndBrandPersonality, setToneAndBrandPersonality] = useState('');
   const [email, setEmail] = useState('');
 
-  const [planSteps, setPlanSteps] = useState<string[]>([]);
   const {toast} = useToast();
 
   const router = useRouter();
@@ -73,49 +72,23 @@ export default function Home() {
       budget: budget[0],
       strengthsToLeverage,
       majorConstraints,
-      preferredChannels: preferredChannels.concat(otherChannel ? [otherChannel] : []),
+      marketing_channel_types: preferredChannels.concat(otherChannel ? [otherChannel] : []),
       toneAndBrandPersonality,
       email,
     };
 
-    // In a real application, you would send this data to your server
-    // and handle saving it to a database.
-    console.log('Onboarding Data:', onboardingData);
-
-    // Generate marketing plan (currently disabled for single page)
-    /*
-    if (selectedChannels.length === 0) {
-      alert('Please select at least one channel.');
-      return;
+    try {
+      const result = await generateMarketingPlan(onboardingData);
+      localStorage.setItem('plan', JSON.stringify(result.planSteps));
+      router.push('/plan-display');
+    } catch (error: any) {
+      console.error('Error generating marketing plan:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate marketing plan. Please try again.',
+        variant: 'destructive',
+      });
     }
-
-    // Generate marketing plan for each selected channel
-    const plans = await Promise.all(
-      selectedChannels.map(async channel => {
-        const input = {
-          ...onboardingData,
-          channel,
-        };
-        try {
-          const result = await generateMarketingPlan(input);
-          return {channel, planSteps: result.planSteps};
-        } catch (error) {
-          console.error(`Error generating plan for ${channel}:`, error);
-          return {channel, planSteps: ['Failed to generate plan.']};
-        }
-      })
-    );
-
-    // Aggregate plan steps
-    let allSteps: string[] = [];
-    plans.forEach(plan => {
-      allSteps = allSteps.concat([`## ${plan.channel}`]).concat(plan.planSteps);
-    });
-    setPlanSteps(allSteps);
-    */
-
-    // For now, let's just navigate to the plan display page
-    router.push('/plan-display');
   };
 
   return (
@@ -215,7 +188,7 @@ export default function Home() {
           <Label htmlFor="currentAwareness" className="block text-sm font-medium text-foreground">
             4. Current Awareness/Validation
           </Label>
-          <Select onValueChange={value => setCurrentAwareness(value)}>
+          <Select onValueChange={value => setCurrentAwareness(value as 'Just an idea' | 'MVP live' | 'Some beta users' | 'Public launch' | 'Revenue generating')}>
             <SelectTrigger className="shadow-sm bg-input border border-input text-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
               <SelectValue placeholder={currentAwareness} />
             </SelectTrigger>
@@ -233,7 +206,7 @@ export default function Home() {
           <Label htmlFor="goal" className="block text-sm font-medium text-foreground">
             5. Goal
           </Label>
-          <Select onValueChange={value => setGoal(value)}>
+          <Select onValueChange={value => setGoal(value as 'Awareness' | 'Waitlist signups' | 'App downloads' | 'Purchases/Users' | 'Feedback/Validation' | 'Brand credibility')}>
             <SelectTrigger className="shadow-sm bg-input border border-input text-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
               <SelectValue placeholder={goal} />
             </SelectTrigger>

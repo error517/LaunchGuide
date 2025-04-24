@@ -11,12 +11,17 @@ import {ai} from '@/ai/ai-instance';
 import {z} from 'genkit';
 
 const GenerateMarketingPlanInputSchema = z.object({
-  productDescription: z.string().describe('A description of the product or service.'),
-  targetAudience: z.string().describe('A description of the target audience.'),
-  businessGoal: z.string().describe('The primary business goal (e.g., first 10 paying customers, 100 beta users).'),
-  budgetConstraints: z.string().describe('Budget constraints (e.g., <$500/month, time-only).'),
-  marketingKnowledge: z.string().describe('Self-assessment of marketing knowledge (e.g., beginner, some familiarity).'),
-  channel: z.string().describe('The marketing channel to generate a plan for (e.g., Content Marketing, SEO).'),
+  productOverview: z.string().describe('A brief description of the product or service (1-2 sentences).'),
+  coreValueProposition: z.string().describe('The most unique, urgent, or emotionally resonant benefit of the product.'),
+  targetAudience: z.string().describe('The ideal user (demographics, psychographics, interests, behavior patterns).'),
+  currentAwareness: z.enum(['Just an idea', 'MVP live', 'Some beta users', 'Public launch', 'Revenue generating']).describe('What stage is the product at?'),
+  goal: z.enum(['Awareness', 'Waitlist signups', 'App downloads', 'Purchases/Users', 'Feedback/Validation', 'Brand credibility']).describe('What are you trying to achieve from this campaign?'),
+  budget: z.number().describe('The total budget willing to invest in marketing over the next 30-60 days.'),
+  strengthsToLeverage: z.string().describe('Advantages or assets you already have (e.g., email list, early fans, influencer access).'),
+  majorConstraints: z.string().describe('Limitations in time, money, team, legal, or platform (e.g., "Instagram account restricted").'),
+  marketing_channel_types: z.array(z.string()).describe('Preferred marketing channel types (e.g., Paid ads, Partnerships/affiliates).'),
+  toneAndBrandPersonality: z.string().describe('How the brand should feel in marketing materials (e.g., bold, cheeky, trustworthy).'),
+  email: z.string().email().describe('Email address to send recommendations to.'),
 });
 export type GenerateMarketingPlanInput = z.infer<typeof GenerateMarketingPlanInputSchema>;
 
@@ -33,12 +38,17 @@ const generateMarketingPlanPrompt = ai.definePrompt({
   name: 'generateMarketingPlanPrompt',
   input: {
     schema: z.object({
-      productDescription: z.string().describe('A description of the product or service.'),
-      targetAudience: z.string().describe('A description of the target audience.'),
-      businessGoal: z.string().describe('The primary business goal (e.g., first 10 paying customers, 100 beta users).'),
-      budgetConstraints: z.string().describe('Budget constraints (e.g., <$500/month, time-only).'),
-      marketingKnowledge: z.string().describe('Self-assessment of marketing knowledge (e.g., beginner, some familiarity).'),
-      channel: z.string().describe('The marketing channel to generate a plan for (e.g., Content Marketing, SEO).'),
+      productOverview: z.string().describe('A brief description of the product or service (1-2 sentences).'),
+      coreValueProposition: z.string().describe('The most unique, urgent, or emotionally resonant benefit of the product.'),
+      targetAudience: z.string().describe('The ideal user (demographics, psychographics, interests, behavior patterns).'),
+      currentAwareness: z.string().describe('What stage is the product at?'),
+      goal: z.string().describe('What are you trying to achieve from this campaign?'),
+      budget: z.number().describe('The total budget willing to invest in marketing over the next 30-60 days.'),
+      strengthsToLeverage: z.string().describe('Advantages or assets you already have (e.g., email list, early fans, influencer access).'),
+      majorConstraints: z.string().describe('Limitations in time, money, team, legal, or platform (e.g., "Instagram account restricted").'),
+      marketing_channel_types: z.array(z.string()).describe('Preferred marketing channel types (e.g., Paid ads, Partnerships/affiliates).'),
+      toneAndBrandPersonality: z.string().describe('How the brand should feel in marketing materials (e.g., bold, cheeky, trustworthy).'),
+      email: z.string().email().describe('Email address to send recommendations to.'),
     }),
   },
   output: {
@@ -47,25 +57,24 @@ const generateMarketingPlanPrompt = ai.definePrompt({
     }),
   },
   prompt: `You are an expert marketing consultant for early-stage technical founders.
-
-You will generate a step-by-step marketing plan for the given channel, tailored to the founder's specific situation.
-
+You will generate a step-by-step marketing plan tailored to the founder's specific situation.
 Consider the following information when creating the plan:
-
-*   Product Description: {{{productDescription}}}
+*   Product Overview: {{{productOverview}}}
+*   Core Value Proposition: {{{coreValueProposition}}}
 *   Target Audience: {{{targetAudience}}}
-*   Business Goal: {{{businessGoal}}}
-*   Budget Constraints: {{{budgetConstraints}}}
-*   Marketing Knowledge: {{{marketingKnowledge}}}
-*   Marketing Channel: {{{channel}}}
+*   Current Awareness: {{{currentAwareness}}}
+*   Goal: {{{goal}}}
+*   Budget: {{{budget}}}
+*   Strengths to Leverage: {{{strengthsToLeverage}}}
+*   Major Constraints: {{{majorConstraints}}}
+*   Preferred Channel Types: {{{marketing_channel_types}}}
+*   Tone & Brand Personality: {{{toneAndBrandPersonality}}}
 
 The plan should be extremely specific and actionable, breaking down each step into the smallest feasible first steps for a beginner.
-Include links to simple external resources where appropriate.
-
+Include links to simple external resources where appropriate. The plan should be no more than 10 steps.
 Output the plan as a numbered list of steps.
 
 Example Output:
-
 [
   "1. Research relevant keywords using a free tool like Google Keyword Planner.",
   "2. Create a content calendar outlining topics and publication dates.",
